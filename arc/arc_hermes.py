@@ -1,3 +1,31 @@
+# -----------------------------------------------------------------------------
+# SOVEREIGN INTEGRITY PROTOCOL (SIP) LICENSE v1.1
+# 
+# Copyright (c) 2026, Bradley Wallace (tensorrent). All rights reserved.
+# 
+# This software, research, and associated mathematical implementations are
+# strictly governed by the Sovereign Integrity Protocol (SIP) License v1.1:
+# - Personal/Educational Use: Perpetual, worldwide, royalty-free.
+# - Commercial Use: Expressly PROHIBITED without a prior written license.
+# - Unlicensed Commercial Use: Triggers automatic 8.4% perpetual gross
+#   profit penalty (distrust fee + reparation fee).
+# 
+# See the SIP_LICENSE.md file in the repository root for full terms.
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# SOVEREIGN INTEGRITY PROTOCOL (SIP) LICENSE v1.1
+# 
+# Copyright (c) 2026, Bradley Wallace (tensorrent). All rights reserved.
+# 
+# This software, research, and associated mathematical implementations are
+# strictly governed by the Sovereign Integrity Protocol (SIP) License v1.1:
+# - Personal/Educational Use: Perpetual, worldwide, royalty-free.
+# - Commercial Use: Expressly PROHIBITED without a prior written license.
+# - Unlicensed Commercial Use: Triggers automatic 8.4% perpetual gross
+#   profit penalty (distrust fee + reparation fee).
+# 
+# See the SIP_LICENSE.md file in the repository root for full terms.
+# -----------------------------------------------------------------------------
 """
 arc_hermes.py — ARC-AGI ↔ Sovereign Stack Integration
 =======================================================
