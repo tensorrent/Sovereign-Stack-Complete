@@ -1,0 +1,334 @@
+# docker-compose.yml (v4 — Hermes + Claude Flow + Vexel + VQA)
+# ═══════════════════════════════════════════════════════════════
+#
+# Memory architecture across four systems:
+#
+#   Hermes     → /app/hermes/memories/  (MEMORY.md, USER.md, skills/)
+#                /app/hermes/state.db   (session history + FTS5)
+#                /app/hermes/SOUL.md    (sovereign persona)
+#
+#   Vexel      → /app/swarm/memory.db   (scroll events, agent registry)
+#                /app/sovereign_sdk/mixdowns/  (saved .scroll files)
+#                each MEMORY.md entry carries a scroll root provenance tag
+#                each SKILL.md carries a Ulam coordinate anchor
+#
+#   Claude Flow → /app/swarm/memory.db (shared_state, agents, handoffs)
+#                (vexel adds 3 extension tables to same DB)
+#
+#   VQA        → /app/vqa/cache        (query cache, keyed by image hash)
+#                /app/vqa/images       (downloaded/referenced images)
+#                every query → EV_QUERY in scroll
+#                every answer → EV_RESONANCE in scroll
+#                commit=true → MEMORY.md entry with provenance tag
+#
+# Volumes:
+#   sovereign_memories — /app/hermes/memories (MEMORY.md, USER.md)
+#   sovereign_skills   — /app/hermes/skills   (SKILL.md files)
+#   sovereign_swarm    — /app/swarm           (memory.db, scroll events)
+#   sovereign_mixdowns — /app/sovereign_sdk/mixdowns (.scroll files)
+#   sovereign_sessions — /app/hermes/sessions (session JSON logs)
+#   sovereign_scrolls  — /app/hermes/scrolls  (hermes session scrolls)
+#   sovereign_vqa      — /app/vqa             (VQA cache + images)
+
+services:
+  sovereign-fullstack:
+    build:
+      context: .
+      dockerfile: Dockerfile.sovereign
+    container_name: sovereign_fullstack
+    image: sovereign-fullstack:latest
+    restart: unless-stopped
+
+    volumes:
+      # SEGGCI cognitive organs (read-only)
+      - ${SEGGCI_HOST_PATH:-./seggci_workspace}:/app/seggci_workspace:ro
+
+      # Hermes persistent memory (survives restarts)
+      - sovereign_memories:/app/hermes/memories
+      - sovereign_skills:/app/hermes/skills
+      - sovereign_sessions:/app/hermes/sessions
+      - sovereign_scrolls:/app/hermes/scrolls
+
+      # Shared swarm DB (Vexel + Claude Flow)
+      - sovereign_swarm:/app/swarm
+
+      # Vexel scroll mixdowns
+      - sovereign_mixdowns:/app/sovereign_sdk/mixdowns
+
+      # VQA cache + image store
+      - sovereign_vqa:/app/vqa
+
+      # ARC-AGI dataset cache + pattern library
+      - sovereign_arc:/app/arc
+
+      # Hermes config (optional host override)
+      # - ./hermes-config.yaml:/app/hermes/config.yaml:ro
+      # - ./hermes.env:/app/hermes/.env:ro
+
+      # Sovereign persona
+      - ./SOUL.md:/app/hermes/SOUL.md:ro
+
+      # Claude Flow project config
+      - ./CLAUDE.md:/app/sovereign_sdk/CLAUDE.md:ro
+
+    environment:
+      # Runtime mode
+      - MODE=${MODE:-NORMAL}
+      - SOVEREIGN_SEED=${SOVEREIGN_SEED:-sovereign}
+
+      # Vexel / Trinity
+      - TRINITY_LIB=/app/libtrinity.so
+      - SWARM_DB=/app/swarm/memory.db
+      - MIXDOWN_DIR=/app/sovereign_sdk/mixdowns
+
+      # Hermes memory bridge
+      - HERMES_DIR=/app/hermes
+      - HERMES_VEXEL_ENABLED=true
+
+      # LLM provider (used by both Hermes and VQA claude backend)
+      # - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+      # Claude Flow / Swarm
+      - CLAUDE_FLOW_HOOKS_ENABLED=true
+      - CLAUDE_FLOW_MEMORY_PATH=/app/swarm
+      - NODE_PATH=/app/npm-global/node_modules
+
+      # Agent identity (override per-container for multi-agent)
+      - VEXEL_SWARM_ID=${VEXEL_SWARM_ID:-sovereign-swarm}
+      - VEXEL_AGENT_ID=${VEXEL_AGENT_ID:-hermes-001}
+      - VEXEL_AGENT_ROLE=${VEXEL_AGENT_ROLE:-coordinator}
+
+      # VQA settings
+      - VQA_CACHE=1
+      - VQA_CACHE_DIR=/app/vqa/cache
+      # Ollama: point at host machine (where GPU likely lives)
+      - OLLAMA_HOST=http://host.docker.internal:11434
+      # Override model names if needed:
+      # - VQA_CLAUDE_MODEL=claude-sonnet-4-6
+      # - VQA_OPENROUTER_MODEL=qwen/qwen2.5-vl-7b-instruct
+      # - VQA_OLLAMA_MODEL=llava:13b
+      # - VQA_BLIP2_MODEL=Salesforce/blip2-opt-2.7b
+      # - VQA_MOONDREAM_MODEL=vikhyatk/moondream2
+
+      # ARC-AGI settings
+      - HERMES_ARC_ENABLED=1
+      - ARC_CACHE_DIR=/app/arc/cache
+      - ARC_PATTERN_DB=/app/arc/patterns.db
+      - ARC_MAX_REFINEMENTS=4
+      - ARC_MAX_CANDIDATES=3
+      - ARC_EXEC_TIMEOUT=10
+      # Override solver models:
+      # - ARC_CLAUDE_MODEL=claude-sonnet-4-6
+      # - ARC_OR_MODEL=anthropic/claude-sonnet-4-5
+
+    stdin_open: true
+    tty: true
+    mem_limit: 6g      # Hermes adds ~1.5GB; VQA local models add 2-6GB more if used
+
+  # ── Ollama sidecar (optional — for local VQA without API keys) ───────────────
+  # Runs LLaVA or any vision model locally. The sovereign stack connects
+  # via OLLAMA_HOST=http://ollama:11434.
+  # Requires: NVIDIA GPU on host with nvidia-container-toolkit installed.
+  #
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: sovereign_ollama
+  #   volumes:
+  #     - ollama_models:/root/.ollama
+  #   ports:
+  #     - "11434:11434"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #
+  # Then pull a vision model:
+  #   docker compose exec ollama ollama pull llava:13b
+
+  # ── Hermes sidecar (optional standalone hermes CLI) ──────────────────────
+  # Uncomment to run hermes interactively alongside the sovereign REPL.
+  # Both share the same memory volumes so memory persists across both.
+  #
+  # hermes-cli:
+  #   extends:
+  #     service: sovereign-fullstack
+  #   container_name: sovereign_hermes
+  #   entrypoint: ["/app/hermes-agent/venv/bin/hermes"]
+  #   command: []
+  #   environment:
+  #     - HERMES_DIR=/app/hermes
+  #     - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+  #   depends_on:
+  #     - sovereign-fullstack
+
+  # ── Multi-agent swarm example ─────────────────────────────────────────────
+  # Three agents sharing the same memory + swarm volumes.
+  # Each gets a different role; all share MEMORY.md and skills/.
+  #
+  # researcher:
+  #   extends:
+  #     service: sovereign-fullstack
+  #   container_name: sovereign_researcher
+  #   environment:
+  #     - VEXEL_SWARM_ID=dev-swarm-001
+  #     - VEXEL_AGENT_ID=res-001
+  #     - VEXEL_AGENT_ROLE=researcher
+  #     - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+  #
+  # coder:
+  #   extends:
+  #     service: sovereign-fullstack
+  #   container_name: sovereign_coder
+  #   environment:
+  #     - VEXEL_SWARM_ID=dev-swarm-001
+  #     - VEXEL_AGENT_ID=cod-001
+  #     - VEXEL_AGENT_ROLE=coder
+  #     - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+
+# ── Named volumes ─────────────────────────────────────────────────────────────
+volumes:
+  sovereign_memories:
+    driver: local
+  sovereign_skills:
+    driver: local
+  sovereign_swarm:
+    driver: local
+  sovereign_mixdowns:
+    driver: local
+  sovereign_sessions:
+    driver: local
+  sovereign_scrolls:
+    driver: local
+  sovereign_vqa:
+    driver: local
+  sovereign_arc:
+    driver: local
+  # ollama_models:    # uncomment if using Ollama sidecar
+  #   driver: local
+
+
+services:
+  sovereign-fullstack:
+    build:
+      context: .
+      dockerfile: Dockerfile.sovereign
+    container_name: sovereign_fullstack
+    image: sovereign-fullstack:latest
+    restart: unless-stopped
+
+    volumes:
+      # SEGGCI cognitive organs (read-only)
+      - ${SEGGCI_HOST_PATH:-./seggci_workspace}:/app/seggci_workspace:ro
+
+      # Hermes persistent memory (survives restarts)
+      - sovereign_memories:/app/hermes/memories
+      - sovereign_skills:/app/hermes/skills
+      - sovereign_sessions:/app/hermes/sessions
+      - sovereign_scrolls:/app/hermes/scrolls
+
+      # Shared swarm DB (Vexel + Claude Flow)
+      - sovereign_swarm:/app/swarm
+
+      # Vexel scroll mixdowns
+      - sovereign_mixdowns:/app/sovereign_sdk/mixdowns
+
+      # Hermes config (optional host override)
+      # - ./hermes-config.yaml:/app/hermes/config.yaml:ro
+      # - ./hermes.env:/app/hermes/.env:ro
+
+      # Sovereign persona
+      - ./SOUL.md:/app/hermes/SOUL.md:ro
+
+      # Claude Flow project config
+      - ./CLAUDE.md:/app/sovereign_sdk/CLAUDE.md:ro
+
+    environment:
+      # Runtime mode
+      - MODE=${MODE:-NORMAL}
+      - SOVEREIGN_SEED=${SOVEREIGN_SEED:-sovereign}
+
+      # Vexel / Trinity
+      - TRINITY_LIB=/app/libtrinity.so
+      - SWARM_DB=/app/swarm/memory.db
+      - MIXDOWN_DIR=/app/sovereign_sdk/mixdowns
+
+      # Hermes memory bridge
+      - HERMES_DIR=/app/hermes
+      - HERMES_VEXEL_ENABLED=true
+
+      # Hermes LLM provider (set at runtime)
+      # - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+      # Claude Flow / Swarm
+      - CLAUDE_FLOW_HOOKS_ENABLED=true
+      - CLAUDE_FLOW_MEMORY_PATH=/app/swarm
+      - NODE_PATH=/app/npm-global/node_modules
+
+      # Agent identity (override per-container for multi-agent)
+      - VEXEL_SWARM_ID=${VEXEL_SWARM_ID:-sovereign-swarm}
+      - VEXEL_AGENT_ID=${VEXEL_AGENT_ID:-hermes-001}
+      - VEXEL_AGENT_ROLE=${VEXEL_AGENT_ROLE:-coordinator}
+
+    stdin_open: true
+    tty: true
+    mem_limit: 6g      # Hermes adds ~1.5GB; VQA local models add 2-6GB more if used
+
+  # ── Hermes sidecar (optional standalone hermes CLI) ──────────────────────
+  # Uncomment to run hermes interactively alongside the sovereign REPL.
+  # Both share the same memory volumes so memory persists across both.
+  #
+  # hermes-cli:
+  #   extends:
+  #     service: sovereign-fullstack
+  #   container_name: sovereign_hermes
+  #   entrypoint: ["/app/hermes-agent/venv/bin/hermes"]
+  #   command: []
+  #   environment:
+  #     - HERMES_DIR=/app/hermes
+  #     - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+  #   depends_on:
+  #     - sovereign-fullstack
+
+  # ── Multi-agent swarm example ─────────────────────────────────────────────
+  # Three agents sharing the same memory + swarm volumes.
+  # Each gets a different role; all share MEMORY.md and skills/.
+  #
+  # researcher:
+  #   extends:
+  #     service: sovereign-fullstack
+  #   container_name: sovereign_researcher
+  #   environment:
+  #     - VEXEL_SWARM_ID=dev-swarm-001
+  #     - VEXEL_AGENT_ID=res-001
+  #     - VEXEL_AGENT_ROLE=researcher
+  #     - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+  #
+  # coder:
+  #   extends:
+  #     service: sovereign-fullstack
+  #   container_name: sovereign_coder
+  #   environment:
+  #     - VEXEL_SWARM_ID=dev-swarm-001
+  #     - VEXEL_AGENT_ID=cod-001
+  #     - VEXEL_AGENT_ROLE=coder
+  #     - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+
+# ── Named volumes ─────────────────────────────────────────────────────────────
+volumes:
+  sovereign_memories:
+    driver: local
+  sovereign_skills:
+    driver: local
+  sovereign_swarm:
+    driver: local
+  sovereign_mixdowns:
+    driver: local
+  sovereign_sessions:
+    driver: local
+  sovereign_scrolls:
+    driver: local

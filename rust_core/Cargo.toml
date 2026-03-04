@@ -1,0 +1,22 @@
+[package]
+name = "trinity_core"
+version = "9.0.0"
+edition = "2021"
+authors = ["Brad Wallace <@ArtWithHeartNFT>"]
+description = "TENT v9.0 — Trinity Core: Bind · Rotate · Align. 91-line Rust kernel replacing Python tensor ops."
+license = "MIT"
+
+[[bin]]
+name = "trinity_core"
+path = "src/main.rs"
+
+[lib]
+name = "trinity_core"
+path = "src/lib.rs"
+
+[profile.release]
+opt-level     = 3
+lto           = "fat"
+codegen-units = 1
+panic         = "abort"
+strip         = "symbols"

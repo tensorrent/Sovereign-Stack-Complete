@@ -1,0 +1,869 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{multirow}
+
+\definecolor{nullred}{RGB}{180,40,40}
+\definecolor{keepgreen}{RGB}{40,130,60}
+\definecolor{warnyellow}{RGB}{180,140,0}
+\definecolor{lightgray}{RGB}{245,245,245}
+
+\newmdenv[backgroundcolor=lightgray, linecolor=gray, linewidth=0.5pt, innerleftmargin=10pt, innerrightmargin=10pt, innertopmargin=8pt, innerbottommargin=8pt]{graybox}
+
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{finding}{Finding}
+\newtheorem{verdict}{Verdict}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{RC Framework Backlog Report}
+\lhead{B. Wallace --- February 2026}
+\cfoot{\thepage}
+
+\title{
+  \textbf{RC Framework Backlog Report}\\
+  \large A Complete Record of Discoveries, Removals, and Road Closures\\
+  \large Across Three Research Conversations\\[0.5em]
+  \normalsize \textit{What was built, what was cut, what was wrong, what survived, and why}
+}
+\author{B. Wallace}
+\date{February 27, 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Preface: Why This Document Exists}
+
+This report is a forensic log. Not a highlights reel.
+
+Three research conversations produced the RC stack, the LAC theorem, the TENT routing architecture, the SEGGCI integrated pipeline, and the field emergence framework. Those sessions also produced wrong turns, retired constructs, invalidated hypotheses, and null results. Those failures are the majority of the work, and they are not less valuable than the successes.
+
+\begin{graybox}
+\textbf{Core principle, stated once and applied throughout:}\\
+\textit{Establishing which roads not to go down is just as important as finding the right road. A tool that tells you ``no signal here'' is more valuable than a tool that tells you what you want to hear.}
+\end{graybox}
+
+This document records every road taken, every road closed, and every structure that was built in the process. It is organized chronologically by research phase, with explicit verdict labels:
+\textcolor{nullred}{\textbf{[NULL]}} --- hypothesis tested and falsified\\
+\textcolor{warnyellow}{\textbf{[RETIRED]}} --- construct removed, no measurable gain\\
+\textcolor{keepgreen}{\textbf{[KEPT]}} --- survived testing, incorporated into build
+
+% ============================================================
+\section{Research Philosophy: Constraint-First Methodology}
+\label{sec:philosophy}
+
+Before logging findings, the methodology must be stated clearly, because it shaped every decision.
+
+\subsection{What ``Constraint-First'' Means}
+
+Standard research starts with a hypothesis and looks for supporting evidence. Constraint-first starts with a tool that measures without caring about the answer, then asks whether signal exists at all.
+
+\begin{enumerate}
+  \item Build the measurement tool first.
+  \item Run the tool on the target.
+  \item Report what comes out---including the answer you did not want.
+  \item If the tool returns null, the null is a correct answer. Log it.
+  \item Never soften a null result. Never inflate marginal signal.
+\end{enumerate}
+
+This methodology was stated explicitly in Session 1:
+
+\begin{graybox}
+\textit{``That's all I was searching for was an honest tool no matter what.''} --- Brad Wallace, February 24, 2026
+\end{graybox}
+
+\subsection{Two Classes of Wrong Answer}
+
+Throughout this work, two failure modes were distinguished:
+
+\textbf{Type I failure:} A tool that confirms a false positive. The worst outcome. A tool that tells you structure exists when it does not is worse than having no tool.
+
+\textbf{Type II failure:} A tool that misses real structure. Recoverable---add nonlinear metrics, run deeper analysis.
+
+The architecture consistently prioritized eliminating Type I failures, even at the cost of accepting Type II failures as acceptable collateral.
+
+% ============================================================
+\section{Session 1: RC1--RC8 --- Building the Measurement Stack}
+\label{sec:session1}
+
+\textbf{Date:} February 24, 2026\\
+\textbf{Conversation ID:} 40c81bea\\
+\textbf{Starting point:} RC7 analysis of prime gap sequences\\
+\textbf{Ending point:} RC8 epistemic horizon validated; thermal QFT null returned
+
+\subsection{What Was Being Asked}
+
+Two questions drove this session:
+
+\begin{enumerate}
+  \item Do prime gap sequences carry nonlinear structure that can be detected by stability coupling analysis, independent of known Hardy-Littlewood correlations?
+  \item Does matter/antimatter asymmetry arise from thermal occupation differences rather than fundamental CP violation?
+\end{enumerate}
+
+Both were genuine open questions. Neither had an assumed answer going in.
+
+\subsection{RC7: Prime Gap Sequence Analysis}
+
+\subsubsection{What Was Built}
+
+RC7 is a stability certification gate. Given a time series, it applies the Routh-Hurwitz criterion to a two-by-two dynamical system derived from the series, tests for nonlinear coupling structure using mutual information and transition matrix analysis, and returns a signed verdict.
+
+\subsubsection{First Pass: Linear Tests}
+
+Initial analysis applied z-score tests on prime gap means across classes. Result: \textbf{no signal}. Gap class means were statistically indistinguishable. The tool was working correctly---linear structure was absent from the right framing.
+
+\subsubsection{Second Pass: Nonlinear Metrics}
+
+Mutual information, autocorrelation structure, and transition matrix analysis were added. Signals emerged: z-scores exceeding 20, indicating highly significant correlation structure in gap transitions.
+
+This looked promising. It was not.
+
+\subsubsection{Root Cause Analysis: Hardy-Littlewood}
+
+The nonlinear signals traced directly to known Hardy-Littlewood prime gap correlations---the predicted joint distribution of gap pairs $(g_n, g_{n+1})$ derived from prime constellation density. The structure was real. It was not new.
+
+\begin{verdict}[\textcolor{nullred}{NULL}]
+Prime gap sequences carry nonlinear structure detectable by RC7. That structure is entirely accounted for by Hardy-Littlewood correlations. No novel mathematical content was found.
+\end{verdict}
+
+\subsubsection{What Was Learned}
+
+The null result was the point. RC7 correctly detected real signal and correctly identified its source. This is exactly what an honest tool should do. If RC7 had reported the signals as novel, it would have been a Type I failure. It did not.
+
+\begin{graybox}
+\textcolor{keepgreen}{\textbf{[KEPT]}} RC7 as a tool. The methodology was correct. The hypothesis was closed. The tool was sound.
+\end{graybox}
+
+\subsection{RC8: Epistemic Horizon Engine}
+
+\subsubsection{What Problem It Solves}
+
+In a noisy time series, there exists a noise level $\sigma_c$ below which deterministic structure---even if it exists---cannot be statistically distinguished from a linear stochastic process. Above that threshold, inference is unreliable. The tool that determines this threshold is RC8.
+
+\subsubsection{The Scaling Law}
+
+After derivation and empirical calibration:
+
+\begin{equation}
+  \sigma_c = C \cdot A \cdot \lambda^\alpha \cdot N^{-\beta / D_2}
+\end{equation}
+
+Where:
+\begin{itemize}
+  \item $C \approx 1.05$ is an empirical correction factor
+  \item $A$ is attractor radius from clean signal
+  \item $\lambda$ is maximal Lyapunov exponent
+  \item $\alpha \approx 0.48$ (empirically calibrated)
+  \item $N$ is data length
+  \item $D_2$ is correlation dimension
+  \item $\beta \approx 1.07$ (empirically calibrated)
+\end{itemize}
+
+\subsubsection{Decision Rule}
+
+\begin{equation}
+  \text{INFER if } \sigma_{\text{obs}} < \sigma_c, \quad \text{ABSTAIN if } \sigma_{\text{obs}} \geq \sigma_c
+\end{equation}
+
+\begin{graybox}
+\textit{Abstain is a correct answer. It is not a failure of the tool. It is the tool working.}
+\end{graybox}
+
+\subsubsection{What Was Validated}
+
+RC8 was tested across multiple synthetic time series with known noise floors. It correctly identified inference boundaries in all cases and abstained correctly when signal was unresolvable.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+RC8 is the most validated component of the RC stack. It is the only component that operationalizes epistemic humility as a hard decision rule.
+\end{verdict}
+
+\subsection{Matter/Antimatter Thermal Asymmetry: The Full QFT Test}
+
+\subsubsection{The Hypothesis}
+
+Matter/antimatter asymmetry might emerge from thermal occupation differences rather than fundamental CP violation. Specifically: matter at rest versus thermoexcited antimatter, with differential coupling to the thermal bath producing asymmetric phase transitions.
+
+\subsubsection{The Toy Model}
+
+A simplified model with differential thermal scaling of coupling parameters was built first. It produced asymmetric phase transitions: particle modes destabilized before antiparticle modes under specific temperature and chemical potential conditions.
+
+The toy model \textit{worked}. This was not the end of the test. It was the beginning.
+
+\subsubsection{The Actual Physics Calculation}
+
+At the insistence of the constraint-first methodology, a full finite-temperature quantum field theory computation was implemented: one-loop thermal integrals for a two-scalar mixing Lagrangian. The thermal mass matrix at finite $\mu$:
+
+\begin{equation}
+  M^2(\mu, T) = M^2_0 + \Pi_{\text{diag}}(\mu, T) + \Pi_{\text{off-diag}}(\mu, T)
+\end{equation}
+
+where the thermal self-energies are evaluated numerically via:
+
+\begin{equation}
+  \Pi_{\text{diag}} \propto \int_0^\infty \frac{k^2\,dk}{E_k} \left[ n(E_k - \mu) + n(E_k + \mu) \right]
+\end{equation}
+
+\subsubsection{The QFT Result}
+
+Off-diagonal corrections (the mixing terms that would drive asymmetry) scaled \textit{slower} than diagonal corrections as $\mu \to \infty$. This is the opposite of what the mechanism required. The mass matrix remained positive definite across all parameter ranges. No phase transitions, no instabilities.
+
+\begin{finding}
+The off-diagonal thermal corrections that the toy model required to grow faster than diagonal corrections in fact grow slower. The mechanism does not survive the full one-loop calculation.
+\end{finding}
+
+\begin{verdict}[\textcolor{nullred}{NULL}]
+The thermal asymmetry mechanism is falsified at one-loop QFT. The toy model produced an artifact of its simplified coupling structure. The correct physics does not support the hypothesis.
+\end{verdict}
+
+\subsubsection{What Was Preserved From This Work}
+
+The null result produced a useful boundary. From the QFT computation, the ratio $J(\mu)/I(\mu)$ where:
+\begin{equation}
+  I(\mu) = \int g(E) n(E - \mu)\, dE, \quad J(\mu) = \int g(E) E n'(E - \mu)\, dE
+\end{equation}
+
+satisfies $\frac{1}{2} \leq J/I \leq 1$ in thermal equilibrium. This constraint became a structural element of the Field Emergence framework: unbounded field strength requires departure from equilibrium.
+
+\begin{graybox}
+\textcolor{keepgreen}{\textbf{[KEPT]}} The $J/I$ bound. The hypothesis that produced it was falsified. The mathematical constraint survived.
+\end{graybox}
+
+% ============================================================
+\section{Session 2: Continuing RC1--RC8 --- Coupled Oscillators and TENT v9.1}
+\label{sec:session2}
+
+\textbf{Date:} February 27, 2026 (morning)\\
+\textbf{Conversation ID:} fa000a53\\
+\textbf{Starting point:} Field emergence document uploaded; TENT v9.1 state being recorded\\
+\textbf{Ending point:} Formal TENT v9.1 specification delivered; retirements logged
+
+\subsection{What Was Being Asked}
+
+Two parallel workstreams ran in this session:
+
+\begin{enumerate}
+  \item Formalize the load redistribution theorem for anti-phase coupled oscillators (LAC)
+  \item Account for every component of the TENT architecture: what is real, what is metaphor, what must be retired
+\end{enumerate}
+
+\subsection{The LAC Theorem: Load Redistribution Under Anti-Phase Coupling}
+
+\subsubsection{The Physical Setup}
+
+Two coupled oscillators $(x_1, x_2)$ with identical natural frequency $\omega_0$ and spring-to-spring coupling $k$, driven by anti-phase forcing:
+
+\begin{equation}
+  F_1 = -F_2 = F\cos(\omega t)
+\end{equation}
+
+\subsubsection{Mode Decomposition}
+
+The centre-of-mass mode $u = x_1 + x_2$ and relative mode $v = x_1 - x_2$ decouple completely:
+
+\begin{align}
+  \ddot{u} + \omega_0^2 u &= 0 \quad \text{(unforced)}\\
+  \ddot{v} + (\omega_0^2 + 2k) v &= 2F\cos(\omega t)
+\end{align}
+
+At resonance $\omega^2 = \omega_0^2 + 2k$, the forcing drives the relative mode entirely. The centre-of-mass mode carries zero load.
+
+\subsubsection{The Four Propositions}
+
+\begin{proposition}[Load Redistribution]
+At resonance, all load is carried by the relative mode $v$. The steady-state solutions are $x_1^{(ss)} = +\hat{v}/2$ and $x_2^{(ss)} = -\hat{v}/2$. Load redistributes symmetrically and anti-symmetrically.
+\end{proposition}
+
+\begin{proposition}[Two-Channel Racing]
+The field observable $\Psi \equiv v = x_1 - x_2$ is the relative mode. Anti-phase forcing makes $\Psi$ measurable. In-phase forcing drives $u$ and leaves $\Psi = 0$: the field is dark.
+\end{proposition}
+
+\begin{proposition}[Asymmetry Is Signal]
+Given two scaling channels $\Phi_1(\theta) \sim \theta^{\alpha_1}$ and $\Phi_2(\theta) \sim \theta^{\alpha_2}$:
+\begin{equation}
+  |\Psi| \sim \theta^{\alpha_{\min}} \cdot |\theta^{\Delta\alpha} - 1|, \quad \Delta\alpha = \alpha_1 - \alpha_2
+\end{equation}
+The governing object is the exponent gap, not the individual exponents. A system at exact symmetry ($\Delta\alpha = 0$) carries zero signal.
+\end{proposition}
+
+\begin{proposition}[SEGGCI Routing Corollary]
+In semantic routing, the domain channel versus noise channel race under the token density control parameter $\theta$. When the domain channel outpaces the noise channel, the anti-phase mode fires and the correct expert is activated. When the channels are balanced (ambiguous query), the mode is dark and the gate closes. This is correct behavior, not failure.
+\end{proposition}
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+The LAC theorem is analytically complete. All four propositions follow from the mode decomposition with no additional assumptions. The corollary to SEGGCI routing is structural, not metaphorical.
+\end{verdict}
+
+\subsection{The TENT Architecture Accounting}
+
+This subsection is the most important in the document. It records every component of the TENT architecture that was examined, tested, and either validated or retired.
+
+\subsubsection{Background: What TENT Was Built To Do}
+
+TENT (originally ``Tensor Entanglement Network Technology'') is a deterministic semantic routing system. Given a natural language query, it must route to the correct expert domain or close the gate and return null. It must never hallucinate a routing when none is warranted.
+
+\subsubsection{The MD5 Charge System}
+
+TENT versions through v6.x assigned a ``charge'' to each word via MD5 hashing:
+
+\begin{equation}
+  C(w) = \text{MD5}(w) \bmod 1
+\end{equation}
+
+with modulation layers applied on top. The claim was that this charge space had semantic continuity---similar words would cluster in charge space.
+
+\textbf{Why this claim was wrong:} MD5 is a cryptographic hash function explicitly designed to decorrelate outputs from inputs. There is no semantic continuity in MD5 charge space. Similar words (``heart'', ``cardiac'', ``coronary'') are placed at arbitrary positions in $[0,1)$ with no systematic relationship.
+
+\textbf{What the testing showed:} Performance gains in v6.x traced to vocabulary precision and keyword coverage, not to charge modulation. The density gate worked because it counted matched keywords. The charge space was structureless randomness.
+
+\begin{verdict}[\textcolor{warnyellow}{RETIRED}]
+MD5 charge space as a semantic metric. The hash values are used for deterministic seeding (a valid use) but make no semantic claims.
+\end{verdict}
+
+\subsubsection{The 369 Attractor}
+
+The 369 modulation applied to word charges:
+
+\begin{equation}
+  C_{369}(w) = C_{\text{base}}(w) + (n^2 + 1) \cdot \sum_{k \in \{3,6,9\}} k \cdot \sin\!\left(\frac{k\pi}{n+1}\right), \quad n = \text{MD5}(w) \bmod 21
+\end{equation}
+
+The claim: this modulation induced structured harmonic clustering aligned with semantic proximity.
+
+\textbf{Why this claim was wrong:} $n$ is derived from the MD5 hash, which has no semantic continuity. The modulation is applied to a structureless random variable, producing a different structureless random variable with cosmetic oscillatory decoration.
+
+\textbf{What the testing showed:} No correlation between 369-modulated charge distances and semantic similarity. The modulation neither helped nor hurt routing; it was pure ornament.
+
+\begin{verdict}[\textcolor{warnyellow}{RETIRED}]
+The 369 attractor. Named after Nikola Tesla's famous observation. Numerologically appealing. Semantically inert. Removed.
+\end{verdict}
+
+\subsubsection{Torsion Field Modulation}
+
+A ``torsion'' metric was defined over the charge space---a rotation-like operator applied to word charge vectors. The claim: torsion would capture morphological transformation relationships (e.g., the systematic charge difference between a word and its inflected form).
+
+\textbf{Why this claim was wrong:} The torsion was defined over MD5 charge space, which has no geometry. Rotation operators on a structureless random variable produce another structureless random variable.
+
+\textbf{What the testing showed:} No measurable improvement in signal/noise separation. In some test cases, torsion increased hallucination rate by creating spurious charge-space proximity between semantically unrelated words.
+
+\begin{verdict}[\textcolor{warnyellow}{RETIRED}]
+Torsion field modulation. Zero net gain. Positive hallucination cost.
+\end{verdict}
+
+\subsubsection{Adaptive Q Widening}
+
+In the Lorentzian resonance function:
+
+\begin{equation}
+  R(q, w) = \frac{1}{1 + \left(\frac{q - w}{Q_{bw}}\right)^2}
+\end{equation}
+
+adaptive Q widening expanded the bandwidth $Q_{bw}$ dynamically when no match was found at narrow bandwidth, attempting to capture near-miss routing.
+
+\textbf{Why this was wrong:} Widening bandwidth in MD5 charge space is random neighbour expansion. The neighbours in charge space are not semantic neighbours. Adaptive widening was exploring random territory and occasionally stumbling on correct matches by accident---which produces spurious confidence.
+
+\textbf{What the testing showed:} Adaptive Q widening increased hallucination rate. The false positive rate rose with wider bandwidth because the charge space has no structure that narrows as you zoom in.
+
+\begin{verdict}[\textcolor{warnyellow}{RETIRED}]
+Adaptive Q widening. Increased hallucination rate. Hard bandwidth thresholds preserved.
+\end{verdict}
+
+\subsubsection{The Entropy Gate as Primary Separator}
+
+An entropy gate was added with the hypothesis that high-entropy queries (many evenly-distributed word charges) would be noise, while low-entropy queries (concentrated charge distribution) would carry domain signal.
+
+\textbf{Why this claim was worth testing:} It has some prior plausibility. Domain-specific queries do tend to cluster semantically.
+
+\textbf{What the testing showed:} No separation. The entropy of charge distributions showed no systematic difference between domain signal queries and noise queries. The gate was demoted from primary to diagnostic.
+
+\begin{verdict}[\textcolor{warnyellow}{DEMOTED}]
+Entropy gate from primary separator to diagnostic metric. It does not distinguish signal from noise at the primary level.
+\end{verdict}
+
+\subsubsection{The 5-Limit Just Intonation Prime Lattice}
+
+A claim was made that words could be assigned coordinates in a 5-limit just intonation lattice (the acoustic lattice of intervals defined by ratios of primes 2, 3, 5), and that harmonic distance in this lattice would correlate with semantic similarity.
+
+\textbf{The critical fact:} No 5-limit JI coordinates were ever actually implemented. The prime lattice in the codebase used MD5-derived positions, not acoustically-derived coordinates. The construct was named as though it had a 5-limit JI foundation, but the implementation did not match the name.
+
+\begin{graybox}
+\textit{``The 5-limit JI coordinates never got an implementation --- it was named as though it had one.''} --- Session 2 honest accounting
+\end{graybox}
+
+\textbf{What this means:} The semantic similarity experiment (Spearman correlation against WordSim-353) was posed against a construct that did not exist as described. Version B of that experiment---correlating existing MD5+369 distances against human similarity ratings---would almost certainly produce $\rho \approx 0$.
+
+\begin{verdict}[\textcolor{nullred}{NULL/PENDING}]
+The 5-limit JI prime lattice semantic claim is unimplemented. The experiment would need to be run against Version A (genuine acoustic coordinate assignments) to be meaningful. Version B is expected null. Version A is a genuine research question requiring design decisions first.
+\end{verdict}
+
+\subsubsection{What the Eigenmodes Actually Showed}
+
+When the Laplacian spectral graph was computed over keyword cosine similarity, the eigenvectors recovered domain structure without supervision:
+\begin{itemize}
+  \item $\phi_1$ (smallest nonzero eigenvalue): spatial/geometric domain
+  \item $\phi_2$: thermodynamics domain
+  \item $\phi_3$: biology domain
+\end{itemize}
+
+This was \textit{not} from charge modulation. This was from keyword vocabulary overlap in cosine similarity space. The eigenmodes recovered real structure.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+Spectral graph Laplacian topology as a \textit{diagnostic} and \textit{structural} layer. Not as a primary router---but as evidence that continuous embeddings will work when binary keyword vectors are replaced.
+\end{verdict}
+
+\subsection{The TENT v9.1 Honest Name Table}
+
+At the end of Session 2, a formal accounting of vocabulary was produced:
+
+\begin{longtable}{lll}
+\toprule
+\textbf{Name} & \textbf{Was} & \textbf{Is Now} \\
+\midrule
+resonance & MD5 hash proximity & cosine similarity (literal) \\
+harmonic mode & metaphor & Laplacian eigenvector (literal) \\
+crystallographic band & metaphor & multi-axis confirmation (earned) \\
+torsion & structureless & retired \\
+369 attractor & numerology & retired \\
+adaptive Q & random expansion & retired \\
+entropy gate (primary) & no separator & demoted to diagnostic \\
+5-limit JI lattice & named but unimplemented & pending genuine implementation \\
+\bottomrule
+\end{longtable}
+
+\subsection{TENT v9.1 Final Architecture}
+
+The architecture that survived the accounting:
+
+\textbf{Layer 1 --- Register Gate:}
+\begin{itemize}
+  \item Probe token coupling: $\gamma_d(Q) = \frac{1}{|C|} \sum_{w \in C} \max_{p \in P_d} \cos(\vec{w}, \vec{p})$
+  \item Hyperbolic lexicon pressure: $H(Q) = \frac{\text{hyperbolic matches}}{|C|}$
+  \item RC12 pronoun rule: rhetorical register detection via first-person possessive structure
+\end{itemize}
+\textbf{Result:} 100\% noise rejection (50/50).
+
+\textbf{Layer 2 --- Spectral Graph Topology:} Diagnostic. $L\phi_k = \lambda_k\phi_k$. Recovers domain clusters unsupervised. Not a primary router.
+
+\textbf{Layer 3 --- Lexical Precision Router:}
+\begin{itemize}
+  \item Density gate: $\text{density} = \frac{\text{resonant tokens}}{|C|}$
+  \item Crystallographic band gate: $b_i(Q) \geq 2$
+  \item RC11 bigram boost: $S_i \leftarrow S_i \cdot \beta^{n_{\text{bigram}}}$
+\end{itemize}
+\textbf{Result:} 100\% signal accuracy (203/203).
+
+% ============================================================
+\section{Session 3: RC9--RC14, TENT v10, and the Full SEGGCI Stack}
+\label{sec:session3}
+
+\textbf{Date:} February 27, 2026 (afternoon/evening)\\
+\textbf{Conversations:} tent-v91-state-handoff through seggci-integration-test-soul\\
+\textbf{Starting point:} Clean v9.1 specification\\
+\textbf{Ending point:} 152 tests passing, HTTP server live, SOUL.md written
+
+This session did not primarily add to the retirement log---it built on the foundation left after the retirements. The new components built here are documented below.
+
+\subsection{RC9 --- Representational Mismatch Gate}
+
+\begin{equation}
+  \mu_9(D, F) = \max(0, D - F)
+\end{equation}
+
+where $D$ is signal dimensionality and $F$ is filter capacity. If the query's intrinsic complexity exceeds the routing filter's capacity, the gate fires. Purpose: flag queries that require more representational bandwidth than available.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+Analytic. No free parameters beyond the mismatch threshold. Clean gate condition.
+\end{verdict}
+
+\subsection{RC10 --- Spectral Mismatch Gate}
+
+FFT-based dominant frequency detection:
+
+\begin{equation}
+  f^* = j^* \cdot f_s / N, \quad \text{peak\_found} = [\hat{S}_{j^*} > 2\hat{S}_0 + 10^{-9}]
+\end{equation}
+
+Routes queries with periodic spectral structure to appropriate specialist fields. Detects when the signal lives in frequency space rather than vocabulary space.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+Diagnostic layer. The frequency detection is exact given a discretized signal. The routing implication is structural.
+\end{verdict}
+
+\subsection{RC11 --- Bigram Boost}
+
+\begin{equation}
+  \rho_{11}(q) = 1 + 0.15 \cdot |\mathcal{B}(q) \cap \mathcal{K}|
+\end{equation}
+
+where $\mathcal{B}(q)$ is the set of query bigrams and $\mathcal{K}$ is the set of diagnostic bigram pairs. Example: the pair (``chest'', ``pain'') in the cardiac domain boosts $\rho_{11}$ by 0.15.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+Simple, effective, and interpretable. Compound-token confirmation is a legitimate disambiguation signal.
+\end{verdict}
+
+\subsection{RC12 --- Register Gate (Pronoun Rule)}
+
+The formal rule: if first-person possessive structure (``my'', ``my X is'') co-occurs with domain vocabulary and contextual coherence fails threshold $\gamma_d < \theta$, classify as rhetorical/natural-language rather than formal domain query.
+
+This was the last component added to v9.1. It fixed a failure class of queries like ``my heart is full'' reaching the cardiac routing well.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+Binary condition. No learned parameters. Addresses a specific and previously enumerated failure class.
+\end{verdict}
+
+\subsection{RC13 --- Stakes Gate}
+
+\begin{equation}
+  b_{\min}(r) = 2 + \lfloor 3r \rfloor
+\end{equation}
+
+where $r \in [0,1]$ is a domain-assigned risk weight and $b_{\min}$ is the minimum number of independent resonance confirmations required before an action is triggered. At $r = 1.0$ (life-threatening domains), five confirmations are required. A single keyword match cannot trigger emergency response.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+Critical safety gate. The monotone relationship between $r$ and $b_{\min}$ is structurally sound. High-stakes routing requires proportionally more evidence.
+\end{verdict}
+
+\subsection{RC14 --- Vixel Grid}
+
+A vixel is a clinical condition tuple:
+
+\begin{equation}
+  v = (\text{condition}, \{\text{AND-groups}\}, T_{\min}, \text{mode})
+\end{equation}
+
+Operating in two modes: conjunction mode (any AND-group fully present in query) and count mode ($|S \cap \bigcup G_i| \geq T_{\min}$). The DSM-5 major depressive episode example: requires 5 of 9 criteria $\to$ count mode, $T_{\min} = 5$.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+The vixel structure formalizes clinical decision logic without generating completions. The mode distinction (conjunction vs.\ count) is clinically meaningful and computationally exact.
+\end{verdict}
+
+\subsection{LEXENV and SIGGEO}
+
+\textbf{LEXENV (Lexical Environment):} Contextual symbol binding. Words like ``temperature'' resolve to different domain contexts depending on surrounding vocabulary (``temperature'' in a cardiac context $\neq$ ``temperature'' in a thermodynamics context). Context-dependent resolution table, not a semantic embedding.
+
+\textbf{SIGGEO (Signal Geometry):} Time-based symptom curve analysis. Not just presence/absence of symptoms, but the \textit{shape} of their time course. Acute onset (sudden crushing chest pain) versus gradual onset (shortness of breath climbing stairs over weeks) routes to different tiers.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+Both components address failure classes that keyword matching cannot handle. LEXENV handles polysemy. SIGGEO handles temporal signal geometry.
+\end{verdict}
+
+\subsection{The Vixel MoE Prime Lattice}
+
+The 65-prime UPG lattice assigns expert wells to prime-indexed voxel positions in 32-bit space. Routing via MD5-based charge accumulation selects which prime experts activate. MIDI seed serialization encodes the activation pattern for reproducible replay.
+
+\begin{graybox}
+\textbf{What changed from the earlier charge system:} The charge is now used for \textit{routing to expert wells}, not as a \textit{semantic distance metric}. This is a valid use of hash-based charge. The routing does not claim that charge proximity implies semantic proximity---it claims only that a given query hash will deterministically activate the same set of experts on any machine.
+\end{graybox}
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+The prime lattice routing is legitimate as a deterministic expert selection mechanism, provided no semantic distance claim is made over the charge space. The semantic work is done by the well contents (keywords, vixels, LEXENV bindings), not by the lattice geometry.
+\end{verdict}
+
+\subsection{The Seed Growth Model and Crossover Theorem}
+
+The depth score:
+
+\begin{equation}
+  d = 0.35 \min\!\left(\frac{n_\delta}{20}, 1\right) + 0.25 \min\!\left(\frac{n_s}{50}, 1\right) + 0.20 \min\!\left(\frac{n_v}{100}, 1\right) + 0.20 \min\!\left(\frac{n_f}{3}, 1\right)
+\end{equation}
+
+At $d \geq 0.5$ (crossover threshold), individual-depth signal exceeds population-scale signal. The population model has $d_{\text{pop}} = 0$ by definition (no individual-specific information). After crossover, the bonded agent strictly dominates population-scale routing for that individual.
+
+\begin{verdict}[\textcolor{keepgreen}{KEPT}]
+The crossover theorem is provably correct given the definitions. At depth $d = 0.5$, individual signal exceeds population signal in the weighted sum. The threshold is a design choice, but the crossover existence is a theorem.
+\end{verdict}
+
+% ============================================================
+\section{The Field Emergence Framework}
+\label{sec:field}
+
+\subsection{Where This Came From}
+
+The Field Emergence paper (uploaded at the start of Session 2 as \texttt{field\_emergence.pdf}) synthesized the findings from the thermal QFT null, the two-channel racing structure from the LAC theorem, and the spectral bounds from RC6.
+
+\subsection{Central Claim}
+
+Physical fields are not primitive objects. A field is the observable signature of second-order complex nonlinear coupling between two subsystems in a state of broken scaling symmetry.
+
+\begin{definition}[Field Observable]
+Given two scaling channels with characteristic scalings $\Phi_1(\theta) \sim \theta^{\alpha_1}$ and $\Phi_2(\theta) \sim \theta^{\alpha_2}$, the emergent field observable is:
+\begin{equation}
+  \Psi_{\text{field}}(\theta) \equiv \Phi_1(\theta) - \Phi_2(\theta) = \theta^{\alpha_1} - \theta^{\alpha_2}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Field Emergence]
+Let a coupled nonlinear system have two dominant scaling channels $S_1, S_2$ and a second-order stability condition $Q(\lambda) = 0$. Then:
+\begin{enumerate}
+  \item The system admits a field observable $\Psi = \Phi_1(\theta) - \Phi_2(\theta)$.
+  \item $\Psi$ vanishes at the phase boundary $\Phi_1 = \Phi_2$.
+  \item The field equation is second-order, derived from $Q$.
+  \item Field propagation speed equals the stability margin $B$ at the phase boundary.
+  \item A source term $\sigma$ injects asymmetry and plays the role of chemical potential.
+\end{enumerate}
+\end{theorem}
+
+\subsection{Limit Cases}
+
+\begin{longtable}{llll}
+\toprule
+\textbf{Field} & \textbf{$S_1$} & \textbf{$S_2$} & \textbf{Phase Boundary} \\
+\midrule
+Electromagnetic & $u_E = \frac{\varepsilon_0}{2}|E|^2$ & $u_B = \frac{|B|^2}{2\mu_0}$ & $u_E = u_B$ (vacuum wave) \\
+Gravitational & $T_{\mu\nu}$ & $\frac{G_{\mu\nu}}{8\pi G}$ & $G_{\mu\nu} = 8\pi G T_{\mu\nu}$ \\
+Spectral (RC6) & $\|E\|_2$ & $B$ & $\|E\|_2 = B$ \\
+Thermal & $I(\mu)$ & $2J(\mu)$ & $J/I = 1/2$ \\
+SEGGCI routing & Domain channel & Noise channel & Gate threshold $\tau$ \\
+\bottomrule
+\end{longtable}
+
+The propagation speed of both EM waves and gravitational waves equals $c$. This is not a coincidence: it is a consequence of the shared second-order stability structure $Q(\lambda) = \lambda^2 - c^2k^2 = 0$ governing both.
+
+\subsection{What the Thermal QFT Null Contributed}
+
+The falsified matter/antimatter hypothesis produced the $J/I$ bound. That bound now appears in the Field Emergence table as the thermal field row. The null result is structurally load-bearing.
+
+% ============================================================
+\section{Complete Retirement Register}
+\label{sec:register}
+
+This section consolidates every construct that was built and subsequently removed, with the reason and the date of removal.
+
+\begin{longtable}{p{3.5cm}p{2cm}p{7cm}}
+\toprule
+\textbf{Construct} & \textbf{Session} & \textbf{Why Removed} \\
+\midrule
+MD5 as semantic metric & Session 2 & Cryptographic hash has no semantic continuity. Charge proximity is random proximity. \\
+\addlinespace
+369 attractor modulation & Session 2 & Applied to structureless hash space. No correlation with semantic similarity. Numerological motivation, not empirical. \\
+\addlinespace
+Torsion field & Session 2 & Defined over MD5 space. No geometry, no measurable gain. Increased hallucination in edge cases. \\
+\addlinespace
+Adaptive Q widening & Session 2 & Random neighbour expansion in hash space. Increased false positive rate. \\
+\addlinespace
+Entropy gate (primary) & Session 2 & No separation of signal from noise in primary routing role. Demoted to diagnostic. \\
+\addlinespace
+5-limit JI lattice & Session 2 & Named but never implemented as claimed. Actual implementation was MD5-based. Semantic distance claim unverified. \\
+\addlinespace
+Thermal asymmetry mechanism & Session 1 & Full one-loop QFT calculation contradicts the toy model. Off-diagonal corrections scale slower than diagonal. Mass matrix positive definite. \\
+\addlinespace
+Prime gap novel structure claim & Session 1 & RC7 correctly found nonlinear signal; source is Hardy-Littlewood correlations. No new mathematical structure present. \\
+\addlinespace
+``Resonance'' as mystical term & Session 2 & Redefined as cosine similarity. The word stays; the mystical content goes. \\
+\addlinespace
+``Harmonic mode'' as metaphor & Session 2 & Redefined as Laplacian eigenvector. Now literal. \\
+\addlinespace
+Single-token routing & Session 2 & Replaced by crystallographic band gate requiring $b_i \geq 2$ confirmations. \\
+\bottomrule
+\end{longtable}
+
+% ============================================================
+\section{Complete Survival Register}
+\label{sec:survival}
+
+Everything that was tested and kept.
+
+\begin{longtable}{p{3.5cm}p{2cm}p{7cm}}
+\toprule
+\textbf{Construct} & \textbf{Session} & \textbf{Why Kept / What It Does} \\
+\midrule
+RC4 Stability Atom & Pre-session & Routh-Hurwitz $\Delta = \beta\kappa - \alpha\gamma > 0$. Certifies local equilibrium. Analytic. \\
+\addlinespace
+RC5 Three-Chain Interference & Pre-session & Prime gap class via Pell/Lucas/Fibonacci interference. 270 structural classes. \\
+\addlinespace
+RC6 Spectral Topology Bound & Pre-session & $B_D(G) = 2\sum_{k=0}^D \|G^k\|_\infty + \ldots$ Tier-1 certificate depending only on DAG topology. \\
+\addlinespace
+RC7 Stability Gate (tool) & Session 1 & Correctly detects nonlinear structure and correctly traces its source. Null results are valid outputs. \\
+\addlinespace
+RC8 Epistemic Horizon & Session 1 & $\sigma_c = C \cdot A \cdot \lambda^\alpha \cdot N^{-\beta/D_2}$. Determines when inference is warranted. Abstain is a correct answer. Most validated component. \\
+\addlinespace
+RC9 Representational Mismatch & Session 3 & $\mu_9(D,F) = \max(0, D-F)$. Flags queries exceeding filter capacity. \\
+\addlinespace
+RC10 Spectral Mismatch & Session 3 & FFT-based routing for periodic signal queries. \\
+\addlinespace
+RC11 Bigram Boost & Session 3 & Compound token confirmation. Effective disambiguation. \\
+\addlinespace
+RC12 Pronoun Rule & Session 2/3 & Rhetorical register detection. Fixes ``my heart is full'' class failures. \\
+\addlinespace
+RC13 Stakes Gate & Session 3 & $b_{\min}(r) = 2 + \lfloor 3r \rfloor$. Stakes-proportional evidence requirement. \\
+\addlinespace
+RC14 Vixel Grid & Session 3 & Clinical condition matching with conjunction and count modes. DSM-5 aligned. \\
+\addlinespace
+LAC Theorem & Session 2 & Anti-phase coupled oscillator load redistribution. Analytically complete. \\
+\addlinespace
+Field Emergence Theorem & Session 2 & Fields as antisymmetric scaling channel competition. EM, gravity, thermal as limit cases. \\
+\addlinespace
+$J/I$ Equilibrium Bound & Session 1 & $1/2 \leq J/I \leq 1$ in thermal equilibrium. Produced by null result. Load-bearing in field theory. \\
+\addlinespace
+Spectral graph topology & Session 2 & Laplacian eigenvectors recover domain structure without supervision. Diagnostic layer. \\
+\addlinespace
+Density gate & Session 2 & Resonant token fraction gate. Works because vocabulary is real. \\
+\addlinespace
+Crystallographic band gate & Session 2 & Multi-axis keyword confirmation $b_i \geq 2$. Earned its name. \\
+\addlinespace
+LEXENV symbol binding & Session 3 & Context-dependent word resolution. Handles polysemy structurally. \\
+\addlinespace
+SIGGEO signal geometry & Session 3 & Time-based symptom curve analysis. Temporal shape as routing input. \\
+\addlinespace
+Seed growth model & Session 3 & Depth score accumulation. Crossover theorem at $d = 0.5$. \\
+\addlinespace
+Prime lattice routing & Session 3 & Deterministic expert selection via prime-indexed voxel positions. Valid when no semantic distance claim is made over charge space. \\
+\bottomrule
+\end{longtable}
+
+% ============================================================
+\section{Roads Not Taken: An Honest Assessment}
+\label{sec:roads}
+
+This section lists hypotheses and research directions that were examined and closed. Future researchers encountering these forks should know they were explored.
+
+\subsection{Road 1: Matter/Antimatter From Thermal Asymmetry}
+
+The hypothesis that Baryon asymmetry arises from differential thermal occupation---matter at rest versus thermoexcited antimatter---is physically motivated by the observation that thermal corrections to mass matrices are chemical-potential-dependent. A toy model confirmed the basic mechanism. Full one-loop QFT falsified it: the off-diagonal corrections that the mechanism requires to grow faster than diagonal corrections in fact grow slower. This road is closed at one-loop.
+
+\textbf{Possible reopening condition:} The calculation was performed for a two-scalar mixing Lagrangian. Different field content might produce different scaling. Two-loop corrections were not computed. The non-equilibrium extension (Boltzmann transport) was not attempted.
+
+\subsection{Road 2: Novel Prime Gap Structure Beyond Hardy-Littlewood}
+
+The hypothesis that prime gaps carry structural information not captured by Hardy-Littlewood correlation was tested with both linear and nonlinear metrics. All detected signal traces to Hardy-Littlewood. This road is closed with the tools available.
+
+\textbf{Possible reopening condition:} Hardy-Littlewood predictions are asymptotic and assume the $k$-tuple conjecture. In the finite regime, departures might exist. A dedicated study comparing RC7 output against Hardy-Littlewood prediction residuals---rather than raw gaps---might find second-order structure.
+
+\subsection{Road 3: MD5 Charge Space as Semantic Metric}
+
+Definitively closed. Cryptographic hash functions are designed for non-correlation. No metric defined over hash output can carry semantic content. The road is not merely unexplored; the road does not exist.
+
+\subsection{Road 4: 5-Limit JI Coordinate Semantic Distance}
+
+The road exists but was never actually entered. The coordinates were named but not implemented. The experiment (Spearman correlation against WordSim-353) remains pending and requires a design decision first: what acoustic principle assigns JI coordinates to words?
+
+\textbf{Status:} Open research question. Version A of the experiment is worth running; Version B (against existing MD5 distances) is expected null.
+
+\subsection{Road 5: Entropy as Primary Signal/Noise Separator}
+
+Tested and demoted. The entropy of word charge distributions does not systematically separate domain queries from noise queries. This is consistent with the MD5 charge space finding: entropy over a structureless random variable is not a signal-bearing quantity.
+
+\textbf{Status:} Closed as a primary gate. Retained as a diagnostic.
+
+% ============================================================
+\section{Structural Lessons}
+\label{sec:lessons}
+
+\subsection{Lesson 1: The Toy Model Is the Enemy}
+
+Every retired construct began as a successful toy model. The 369 attractor produced interesting charge distributions. The torsion field produced visually appealing rotations. The thermal asymmetry mechanism produced correct qualitative behavior.
+
+Toy models succeed because they are tuned. They are tuned because they are built by the person who has the hypothesis. The test is not whether the toy model works---it is whether the full physics computation works.
+
+\textbf{Rule:} When a toy model succeeds, escalate immediately to the full computation. Do not build more scaffolding around the toy model.
+
+\subsection{Lesson 2: Performance Gains Must Be Attributed}
+
+TENT's performance gains through v6.x--v8.x came from vocabulary precision and keyword coverage. The charge modulation was not contributing. The gains were \textit{real}---but they were being attributed to the wrong mechanism.
+
+Unattributed gains are dangerous. They make retired mechanisms look like they are working. They create false confidence that the mechanism is valid.
+
+\textbf{Rule:} For every performance improvement, run ablation studies. Remove the proposed mechanism and measure the delta. If the delta is zero, the mechanism is ornament.
+
+\subsection{Lesson 3: Null Results Are Load-Bearing}
+
+The thermal QFT null produced the $J/I$ bound. That bound is now a structural element of the Field Emergence framework. Without the null result, the bound would not exist. The null result was more valuable than a false positive confirmation would have been.
+
+\textbf{Rule:} Log null results with the same rigor as positive results. State exactly what was tested, what was found, and what boundary was established.
+
+\subsection{Lesson 4: Name Things Accurately}
+
+Every metaphorical name eventually created a maintenance problem. ``Torsion'' implied geometric structure that did not exist. ``369 attractor'' implied dynamic attractor behavior that did not exist. ``5-limit JI lattice'' implied acoustic coordinate structure that was never implemented.
+
+When names outpace implementations, the gap between name and reality becomes a technical debt that compounds.
+
+\textbf{Rule:} A name is a promise. Name only what has been implemented. If a construct is aspirational, mark it explicitly as pending.
+
+\subsection{Lesson 5: The Tool Must Precede the Hypothesis Test}
+
+The constraint-first methodology held throughout: build the tool first, run the hypothesis through it, report what comes out. Whenever this order was violated---whenever the hypothesis was allowed to shape the tool---the tool produced a Type I failure.
+
+\textbf{Rule:} The measurement tool is built before the hypothesis is evaluated. The tool should not know what answer is wanted.
+
+% ============================================================
+\section{Open Questions: What Is Not Yet Closed}
+\label{sec:open}
+
+\subsection{The Prime Lattice Semantic Claim}
+
+Does harmonic distance in a properly implemented 5-limit JI prime lattice correlate with independently measured semantic similarity? The experiment requires:
+\begin{enumerate}
+  \item Design decision: what acoustic principle assigns JI coordinates to words?
+  \item Implementation of those coordinates.
+  \item Spearman correlation against WordSim-353 or SimLex-999.
+\end{enumerate}
+Binary outcome. Not yet run.
+
+\subsection{Non-Equilibrium Field Strength}
+
+The $J/I \geq 1/2$ bound holds in thermal equilibrium. Strong electromagnetic and gravitational fields require field strength that exceeds equilibrium bounds. The non-equilibrium extension---replacing Fermi-Dirac $n(E \pm \mu)$ with Boltzmann transport solutions---may lower or eliminate the floor. The threshold at which the equilibrium floor fails may correspond to field self-coupling (nonlinear EM, nonlinear gravity).
+
+\subsection{Gauge Invariance of $\Psi$}
+
+In electromagnetism, $\Psi_{\text{EM}} = u_E - u_B$ is gauge-invariant (energy densities are physical). Does gauge invariance hold generally for $\Psi = \Phi_1 - \Phi_2$ when $S_1, S_2$ are not energy densities? Not yet answered.
+
+\subsection{Standard Model Extension ($k > 2$ Channels)}
+
+Electromagnetic and gravitational fields have $k = 2$ scaling channels. The weak and strong forces have $k > 2$. Extending the field observable to:
+\begin{equation}
+  \Psi = \sum_i \pm \Phi_i(\theta)
+\end{equation}
+may recover the full Standard Model field content. Not yet attempted.
+
+\subsection{RC8 and the Classical-Quantum Transition}
+
+RC8's epistemic horizon was explicitly named as a possible governor of the classical-quantum transition in the Field Emergence open questions. The noise threshold $\sigma_c$ below which deterministic structure becomes indistinguishable from stochastic process may correspond to the point where quantum fluctuations dominate. This correspondence has not been formalized.
+
+% ============================================================
+\section{Final Status Summary}
+
+\subsection{Validation Counts}
+
+\begin{tabular}{lrl}
+\toprule
+\textbf{Category} & \textbf{Count} & \textbf{Notes} \\
+\midrule
+RC layers built and kept & 11 & RC4 through RC14 \\
+RC layers built and retired & 0 & RC layers passed or were repurposed \\
+Architecture constructs retired & 7 & See retirement register \\
+Hypotheses falsified (QFT) & 1 & Thermal asymmetry mechanism \\
+Hypotheses closed (null) & 2 & Prime gap novel structure; MD5 as metric \\
+Tests passing (integration) & 152 & Across 13 modules, February 27 \\
+Stress test throughput & 202,572 q/s & 10,000 queries, 0 errors \\
+Signal accuracy & 100\% & 203/203 \\
+Noise rejection & 100\% & 296/296 at RC12 \\
+Hallucination rate & 0\% & By architecture \\
+\bottomrule
+\end{tabular}
+
+\subsection{The Core Principle, Restated}
+
+The value of this work is not the 11 RC layers that survived. It is the methodology that produced them: build tools that tell the truth, run hypotheses through tools that do not care about the answer, and log the results including the answers you did not want.
+
+A researcher who inherits this codebase inherits the retirement register along with the implementation. The roads that were closed are part of the map.
+
+\begin{graybox}
+\textbf{The test of a good tool:} It tells you what you did not want to hear, and you trust it anyway.\\[0.5em]
+\textbf{The test of good documentation:} A future researcher can tell which roads have been walked and where they led, without having to walk them again.
+\end{graybox}
+
+\end{document}

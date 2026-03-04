@@ -1,0 +1,92 @@
+# hermes_config.yaml — Containerized Sovereign Hermes Configuration
+# ==================================================================
+# Designed for /app/hermes/config.yaml in the sovereign-fullstack container.
+# This is the complete Hermes configuration with settings tuned for:
+#   - Vexel scroll integration
+#   - Docker terminal backend (sandboxed)
+#   - Conservative memory budgets (our provenance tags use some chars)
+#   - Compression enabled (long sessions eventually compress)
+#   - Skills hub enabled (community skill discovery)
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+# Set provider via env: OPENROUTER_API_KEY or ANTHROPIC_API_KEY
+# Override model at runtime: hermes model
+model: anthropic/claude-sonnet-4-20250514
+provider: auto  # auto, openrouter, nous, openai
+
+# ── Terminal backend ──────────────────────────────────────────────────────────
+terminal:
+  backend: docker            # Sandboxed — agent can't modify its own code
+  docker_image: python:3.11-slim
+  timeout: 180
+  cwd: /workspace
+
+  # Container resource limits
+  container_cpu: 1
+  container_memory: 2048     # 2GB for subagent workloads
+  container_disk: 10240      # 10GB disk
+  container_persistent: true # Persist installed packages, files across sessions
+
+  # Docker workspace lives in the sovereign_mixdowns volume
+  # (separate from hermes memories so it can be wiped independently)
+
+# ── Memory ────────────────────────────────────────────────────────────────────
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+  # Slightly reduced from defaults to account for vexel provenance tags
+  # Each tag = ~80 chars, ~5 typical entries = ~400 chars overhead
+  memory_char_limit: 1800    # default 2200, reduced for tag overhead
+  user_char_limit: 1100      # default 1375, reduced for tag overhead
+
+# ── Compression ───────────────────────────────────────────────────────────────
+compression:
+  enabled: true
+  threshold: 0.82            # Compress at 82% of context limit
+  # Compression model (flash-class for speed)
+  # model: google/gemini-flash-1.5
+
+# ── Skills ────────────────────────────────────────────────────────────────────
+skills:
+  directory: /app/hermes/skills   # Mounted as sovereign_skills volume
+  hub_enabled: true
+  security_scan: true            # Scan hub skills before install
+  auto_create: true              # Agent creates skills from solved problems
+
+# ── Session store ─────────────────────────────────────────────────────────────
+session_store:
+  db_path: /app/hermes/state.db  # vexel_sessions table added here
+  fts_enabled: true
+  max_sessions: 1000
+
+# ── Delegation (subagents) ────────────────────────────────────────────────────
+delegation:
+  max_iterations: 20
+  default_toolsets:
+    - terminal
+    - file
+    - web
+    - skills
+
+# ── Code execution ────────────────────────────────────────────────────────────
+code_execution:
+  timeout: 180
+  max_tool_calls: 30
+
+# ── Context files ─────────────────────────────────────────────────────────────
+# Hermes picks up SOUL.md, AGENTS.md, .cursorrules from cwd
+# SOUL.md is at /app/hermes/SOUL.md — mounted from ./SOUL.md in compose
+# CLAUDE.md is at /app/sovereign_sdk/CLAUDE.md — Claude Flow project config
+
+# ── Tool progress notifications ───────────────────────────────────────────────
+tool_progress: true
+tool_progress_mode: new        # Notify only when tool changes (less noise)
+
+# ── Vexel integration ─────────────────────────────────────────────────────────
+# These are read by hermes_hooks.py, not by Hermes itself
+vexel:
+  enabled: true
+  swarm_db: /app/swarm/memory.db
+  mixdown_dir: /app/hermes/scrolls
+  verbose: false               # Set true for scroll event debug output
+  # scroll_per_session: true   # One .scroll file per conversation

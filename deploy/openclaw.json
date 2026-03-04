@@ -1,0 +1,52 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "seggci/mistral-7b",
+        "fallbacks": [
+          "anthropic/claude-opus-4-6",
+          "openai/gpt-5.1-codex"
+        ]
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "seggci": {
+        "baseUrl": "http://localhost:8402/v1",
+        "apiKey": "seggci-local",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "mistral-7b",
+            "name": "SEGGCI Mistral-7B (Prime MIDI Routed)",
+            "contextWindow": 8192,
+            "maxTokens": 2048,
+            "cost": { "input": 0, "output": 0 }
+          },
+          {
+            "id": "mixtral-8x7b",
+            "name": "SEGGCI Mixtral-8x7B (Prime MIDI Routed, 46.7B)",
+            "contextWindow": 32768,
+            "maxTokens": 4096,
+            "cost": { "input": 0, "output": 0 }
+          }
+        ]
+      }
+    }
+  },
+  "skills": {
+    "load": {
+      "extraDirs": ["~/.openclaw/skills"]
+    },
+    "allowBundled": [
+      "seggci",
+      "github",
+      "tmux",
+      "session-logs",
+      "clawhub",
+      "healthcheck"
+    ]
+  }
+}

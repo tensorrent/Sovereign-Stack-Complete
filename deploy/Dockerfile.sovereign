@@ -1,0 +1,192 @@
+# Dockerfile.sovereign (v4 — with VQA visual question answering)
+# ══════════════════════════════════════════════════════════════
+# Four-stage build:
+#   Stage 1 (Rust)   → compile libtrinity.so
+#   Stage 2 (Node)   → install claude-flow
+#   Stage 3 (Python) → core sovereign runtime
+#   Stage 4 (Hermes) → hermes-agent + persistent memory layer
+#
+# Memory architecture:
+#   Hermes     — declarative (MEMORY.md, USER.md, SKILL.md)
+#   Vexel      — cryptographic (scroll root per entry, Ulam skill anchors)
+#   ClaudeFlow — coordination (shared_state, consensus, task handoff)
+#   VQA        — visual (image+question→answer, scroll-recorded)
+#
+# VQA backends (in priority order):
+#   1. claude      — ANTHROPIC_API_KEY  (best, no GPU needed)
+#   2. openrouter  — OPENROUTER_API_KEY (any multimodal model)
+#   3. llava       — OLLAMA_HOST        (local, needs GPU or fast CPU)
+#   4. blip2       — transformers+torch (local, ~6GB GPU or slow CPU)
+#   5. moondream   — transformers       (local, ~2GB, CPU-friendly)
+#
+# All three share /app/swarm/memory.db (SQLite) and /app/hermes/memories/
+
+
+# ── STAGE 1: RUST BUILDER ────────────────────────────────────────────────────
+FROM rust:1.75-slim AS rust-builder
+
+WORKDIR /build
+COPY trinity_core.rs .
+
+RUN rustc \
+      --edition 2021 \
+      --crate-type cdylib \
+      -C opt-level=3 \
+      -C panic=abort \
+      trinity_core.rs \
+      -o libtrinity.so
+
+RUN nm -D libtrinity.so | grep -q " T bra_eigen_charge" \
+ && nm -D libtrinity.so | grep -q " T vexel_new" \
+ && echo "Trinity Core: exports verified."
+
+
+# ── STAGE 2: NODE BUILDER (Claude Flow) ──────────────────────────────────────
+FROM node:20-slim AS node-builder
+
+WORKDIR /cf
+RUN npm install --prefix /cf/npm-global claude-flow@alpha 2>&1 | tail -3
+RUN ls /cf/npm-global/node_modules/.bin/ | grep -q claude \
+ && echo "claude-flow: installed."
+
+
+# ── STAGE 3: HERMES BUILDER ───────────────────────────────────────────────────
+FROM python:3.11-slim AS hermes-builder
+
+# Hermes requires Python 3.11 (pinned in their pyproject.toml)
+# We install into an isolated prefix to copy cleanly into runtime stage
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git curl ca-certificates build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv (fast Python package manager, same as hermes uses)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
+WORKDIR /hermes
+
+# Clone hermes-agent with submodules
+RUN git clone --depth 1 --recurse-submodules \
+      https://github.com/NousResearch/hermes-agent.git .
+
+# Create venv and install hermes with core extras (no messaging/modal for now)
+RUN uv venv venv --python 3.11 \
+ && VIRTUAL_ENV=/hermes/venv uv pip install -e ".[cli,cron]" \
+ && VIRTUAL_ENV=/hermes/venv uv pip install -e "./mini-swe-agent" \
+ && echo "hermes-agent: installed."
+
+# Verify hermes CLI is present
+RUN /hermes/venv/bin/hermes --help 2>&1 | head -3
+
+
+# ── STAGE 4: RUNTIME ─────────────────────────────────────────────────────────
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libgomp1 \
+      binutils \
+      curl \
+      ca-certificates \
+      ripgrep \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# ── Copy from build stages ────────────────────────────────────────────────────
+
+COPY --from=rust-builder /build/libtrinity.so /app/libtrinity.so
+COPY --from=node-builder /cf/npm-global /app/npm-global
+COPY --from=hermes-builder /hermes /app/hermes-agent
+
+# Verify trinity at build time
+RUN python3 -c "
+import ctypes, sys
+lib = ctypes.CDLL('/app/libtrinity.so')
+lib.bra_verify_f369_table.restype = ctypes.c_int32
+if not lib.bra_verify_f369_table():
+    print('FATAL: Trinity Core verification failed'); sys.exit(1)
+print('libtrinity.so: VERIFIED')
+"
+
+# Sovereign SDK (Python bridge + shell + hooks + hermes bridge)
+COPY . /app/sovereign_sdk/
+
+# Install SDK python deps
+COPY sovereign_requirements.txt .
+RUN pip install --no-cache-dir -r sovereign_requirements.txt
+
+# ── Directory structure ───────────────────────────────────────────────────────
+RUN mkdir -p \
+      /app/sovereign_sdk/mixdowns \
+      /app/swarm \
+      /app/hermes/memories \
+      /app/hermes/skills \
+      /app/hermes/sessions \
+      /app/hermes/scrolls \
+      /app/hermes/logs \
+      /app/hermes/cron \
+      /app/vqa/cache \
+      /app/vqa/images \
+      /app/arc/cache/training \
+      /app/arc/cache/evaluation
+
+# Write SOUL.md into hermes config dir
+COPY SOUL.md /app/hermes/SOUL.md
+
+# ── ENVIRONMENT ───────────────────────────────────────────────────────────────
+
+# Vexel / Trinity
+ENV SOVEREIGN_SDK=/app/sovereign_sdk
+ENV SEGGCI_WS=/app/seggci_workspace
+ENV TRINITY_LIB=/app/libtrinity.so
+ENV PYTHONPATH="/app/sovereign_sdk:/app/hermes-agent"
+ENV SWARM_DB=/app/swarm/memory.db
+ENV MIXDOWN_DIR=/app/sovereign_sdk/mixdowns
+
+# Hermes
+ENV HERMES_DIR=/app/hermes
+ENV HERMES_CONFIG=/app/hermes/config.yaml
+ENV HERMES_ENV_FILE=/app/hermes/.env
+# Point hermes venv at the hermes-agent installation
+ENV PATH="/app/hermes-agent/venv/bin:/app/npm-global/node_modules/.bin:/app/npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ENV VIRTUAL_ENV=/app/hermes-agent/venv
+ENV NODE_PATH="/app/npm-global/node_modules"
+
+# Vexel ↔ Hermes bridge
+ENV HERMES_VEXEL_ENABLED=true
+ENV MODE=NORMAL
+
+# VQA
+# Backend priority: claude → openrouter → llava → blip2 → moondream
+# Set one of the API key envs, OR point OLLAMA_HOST at a running Ollama instance
+ENV VQA_CACHE=1
+ENV VQA_CACHE_DIR=/app/vqa/cache
+ENV OLLAMA_HOST=http://host.docker.internal:11434
+# VQA_CLAUDE_MODEL, VQA_OPENROUTER_MODEL, VQA_OLLAMA_MODEL, VQA_BLIP2_MODEL
+# are all optional overrides — defaults work without setting them
+
+# ARC-AGI
+ENV HERMES_ARC_ENABLED=1
+ENV ARC_CACHE_DIR=/app/arc/cache
+ENV ARC_PATTERN_DB=/app/arc/patterns.db
+ENV ARC_MAX_REFINEMENTS=4
+ENV ARC_MAX_CANDIDATES=3
+ENV ARC_EXEC_TIMEOUT=10
+
+# Non-root user
+RUN useradd -m -u 1000 -s /bin/bash sovereign \
+ && chown -R sovereign:sovereign /app
+USER sovereign
+
+# Healthcheck: verify trinity library is functional
+HEALTHCHECK --interval=30s --timeout=15s --start-period=20s --retries=3 \
+    CMD python3 /app/sovereign_sdk/sovereign_shell.py --verify || exit 1
+
+# Default: sovereign REPL
+# Override: docker compose run sovereign-fullstack hermes
+#       or: docker compose run sovereign-fullstack python3 /app/sovereign_sdk/flow_agent.py
+ENTRYPOINT ["python3", "/app/sovereign_sdk/sovereign_shell.py"]
+CMD []

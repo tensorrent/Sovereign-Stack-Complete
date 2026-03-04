@@ -1,0 +1,28 @@
+# sovereign_requirements.txt
+# ===========================
+# The sovereign intelligence stack is intentionally pure Python stdlib + ctypes.
+# All heavy computation lives in libtrinity.so (compiled Rust).
+#
+# No pip dependencies are required for core operation.
+# The entries below are optional quality-of-life additions.
+
+# readline is stdlib on Linux (included in Python docker images).
+# Uncomment if you need to explicitly install it on a stripped image:
+# readline
+
+# Optional: richer REPL experience
+# gnureadline>=8.0
+
+# Optional: audio/biometric signal processing (Council layer)
+# Only needed if running live biometric authentication pipeline.
+# numpy>=1.24
+# scipy>=1.10
+
+# Optional: rPPG / camera biometrics
+# opencv-python-headless>=4.8
+
+# Optional: MFCC / formant analysis (Council 3 - Acoustic)
+# librosa>=0.10
+
+# Optional: structured logging
+# structlog>=23.0
